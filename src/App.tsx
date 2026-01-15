@@ -128,7 +128,7 @@ const AppContent: React.FC = () => {
       <Navigation collapsed={collapsed} setCollapsed={setCollapsed} />
       <Layout>
         <Content
-          className='p-4 md:p-8 pt-20 md:pt-8'
+          className='p-4 md:p-8 !pt-20 md:pt-8'
           style={{
             background: 'transparent',
             minHeight: '100vh',
