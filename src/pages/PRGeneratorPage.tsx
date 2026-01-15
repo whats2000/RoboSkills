@@ -346,19 +346,19 @@ ${newSkillCategories
                       return (
                         <div key={skill.id} className='flex items-center gap-1'>
                           <Tag
-                            className={`cursor-pointer transition-all ${isSelected ? 'ring-2 ring-white' : ''}`}
-                            style={{
-                              background: isSelected
-                                ? category.color
-                                : isOverlap
-                                  ? `linear-gradient(135deg, ${skill.belongsTo.map((id) => data.categories.find((c) => c.id === id)?.color).join(', ')})`
-                                  : `${category.color}20`,
-                              color:
-                                isSelected || isOverlap
-                                  ? '#fff'
-                                  : category.color,
-                              borderColor: category.color,
-                            }}
+                            className={`cursor-pointer transition-all border ${
+                              isSelected
+                                ? 'text-white'
+                                : 'bg-white/5 text-gray-400 border-gray-700 hover:text-gray-300 hover:border-gray-600'
+                            }`}
+                            style={
+                              isSelected
+                                ? {
+                                    backgroundColor: category.color,
+                                    borderColor: category.color,
+                                  }
+                                : undefined
+                            }
                             onClick={() => {
                               if (isSelected) {
                                 removeSkill(skill.id);
@@ -460,7 +460,7 @@ ${newSkillCategories
           type='primary'
           icon={<PlusOutlined />}
           onClick={generateNewSkillPR}
-          className='mt-4'
+          className='!mt-4'
           disabled={!newSkillName || newSkillCategories.length === 0}
         >
           Generate Skill PR
