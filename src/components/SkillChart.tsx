@@ -308,13 +308,21 @@ const SkillChart: React.FC<SkillChartProps> = ({
       container.selectAll('.categories text').transition().duration(500).style('opacity', 0.05);
       
       // Highlight selected
-      // We need to select the specific group for this node. identifying by ID if possible or just passing the element.
-      // Since we have 'd', we can select by data match or ID if we assigned one. 
-      // Let's assume we can filter.
-      container.selectAll('.skills g')
-        .filter((node: any) => node.id === d.id)
+      const selectedGroup = container.selectAll('.skills g')
+        .filter((node: any) => node.id === d.id);
+        
+      selectedGroup
         .transition().duration(500)
         .style('opacity', 1);
+
+      // Show names and lines for the focused skill
+      selectedGroup.selectAll('.name-label')
+        .transition().duration(500)
+        .style('opacity', 1);
+        
+      selectedGroup.selectAll('.name-link')
+        .transition().duration(500)
+        .style('opacity', 0.5);
     };
 
     const resetZoom = () => {
@@ -324,6 +332,10 @@ const SkillChart: React.FC<SkillChartProps> = ({
       container.selectAll('.skills g').transition().duration(500).style('opacity', 1);
       container.selectAll('.categories circle').transition().duration(500).style('opacity', 1);
       container.selectAll('.categories text').transition().duration(500).style('opacity', 1);
+
+      // Hide names and lines
+      container.selectAll('.name-label').transition().duration(500).style('opacity', 0);
+      container.selectAll('.name-link').transition().duration(500).style('opacity', 0);
     };
 
     // --- Draw Category Foci Backgrounds (Venn Circles) ---
@@ -548,6 +560,65 @@ const SkillChart: React.FC<SkillChartProps> = ({
           (slice) =>
             `${slice.data.name} (${slice.data.role})\n${slice.data.proficiency}`,
         );
+
+      // Label Arc Generator (for positioning outside)
+      const labelRadius = d.r + 8; // Distance for the end of the line
+      const labelArc = d3
+        .arc<d3.PieArcDatum<PersonNode>>()
+        .innerRadius(labelRadius)
+        .outerRadius(labelRadius);
+
+      // Connectors (Lines)
+      g.selectAll('polyline.name-link')
+        .data(pieData)
+        .join('polyline')
+        .attr('class', 'name-link')
+        .attr('points', (d) => {
+          const posA = arcGen.centroid(d); // Center of slice
+          const posB = labelArc.centroid(d); // Outside point
+          return [posA, posB] as any;
+        })
+        .style('fill', 'none')
+        .style('stroke', '#fff')
+        .style('stroke-width', '0.5px')
+        .style('opacity', 0) // Hidden by default
+        .style('pointer-events', 'none');
+
+      // Labels (Text)
+      g.selectAll('text.name-label')
+        .data(pieData)
+        .join('text')
+        .attr('class', 'name-label')
+        .attr('transform', (d) => {
+          // Push text slightly further out from the line end
+          const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+          const x = Math.sin(midAngle) * (labelRadius + 2);
+          const y = -Math.cos(midAngle) * (labelRadius + 2);
+          return `translate(${x}, ${y})`;
+        })
+        .attr('dy', '0.35em')
+        .attr('text-anchor', (d) => {
+          // Calculate angle to decide anchor. 
+          // D3 Arc 0 is at 12 o'clock, increasing clockwise.
+          // 0 -> PI (Right side): start? No.
+          // 0 is up. PI/2 is right. PI is down. 3PI/2 is left.
+          const midAngle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+          if (midAngle > Math.PI && midAngle < Math.PI * 2) {
+             return 'end'; // Left side
+          }
+           return 'start'; // Right side
+        })
+        // Correction: The simple radial push above might overlap. 
+        // But for equal slices it might be okay. 
+        // Let's rely on radial alignment for now.
+        .attr('text-anchor', 'middle') // Radial looks best if radiating out
+        .text((d) => d.data.name.split(' ')[0]) 
+        .style('font-size', '3px') 
+        .style('font-weight', '600')
+        .style('fill', '#fff')
+        .style('text-shadow', '0 1px 2px rgba(0,0,0,0.8)')
+        .style('opacity', 0) 
+        .style('pointer-events', 'none');
 
       // 2. Outer Ring for Categories (Visual Context)
       if (d.categories && d.categories.length > 0) {
