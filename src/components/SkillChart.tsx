@@ -389,7 +389,7 @@ const SkillChart: React.FC<SkillChartProps> = ({
         const group = groups.find((g) => g.id === d.groupId);
         if (group) {
           // k determines how tight the cluster is. stronger k = tighter.
-          const k = 0.1 * alpha;
+          const k = 0.05 * alpha;
           d.vx! += (group.x! - d.x!) * k;
           d.vy! += (group.y! - d.y!) * k;
         }
@@ -408,7 +408,7 @@ const SkillChart: React.FC<SkillChartProps> = ({
           if (isMember) {
             // Stay INSIDE: If dist > radius, push IN
             if (dist > circle.radius - d.r) {
-              const k = (dist - (circle.radius - d.r)) * 0.1 * alpha;
+              const k = (dist - (circle.radius - d.r)) * 5 * alpha;
               d.vx! -= (dx / dist) * k;
               d.vy! -= (dy / dist) * k;
             }
