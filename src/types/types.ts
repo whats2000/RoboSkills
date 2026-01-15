@@ -29,10 +29,10 @@ export const PROFICIENCY_LABELS: Record<ProficiencyLevel, string> = {
 };
 
 export const PROFICIENCY_COLORS: Record<ProficiencyLevel, string> = {
-  beginner: '#95a5a6',
-  intermediate: '#f39c12',
-  advanced: '#27ae60',
-  expert: '#9b59b6',
+  beginner: '#bdc3c7', // Light Grey
+  intermediate: '#2ecc71', // Emerald Green
+  advanced: '#3498db', // Bright Blue
+  expert: '#d770ad', // Pinkish Purple
 };
 
 // Member skill entry - just references the skill ID and proficiency

@@ -5,6 +5,7 @@ import skillsData from '../../public/data/skillsData.json';
 import * as venn from '../utils/d3-venn';
 import type { Area } from '../utils/d3-venn';
 import type { SkillsData } from '../types/types';
+import { PROFICIENCY_COLORS } from '../types/types';
 
 // --- Interfaces ---
 
@@ -190,34 +191,11 @@ const SkillChart: React.FC<SkillChartProps> = ({
       });
 
       // Calculate Skill Radius
-      const minRadius = 18; // Smaller base size
+      const minRadius = 1; // Slightly larger for pie chart visibility
       const calculatedRadius = Math.max(
         minRadius,
-        Math.sqrt(peopleInSkill.length) * 8 + 5,
+        Math.sqrt(peopleInSkill.length) * 5 + 5, // Adjusted scaling
       );
-
-      // Pack people inside the skill radius
-      if (peopleInSkill.length > 0) {
-        const root = d3
-          .pack()
-          .size([calculatedRadius * 2, calculatedRadius * 2])
-          .padding(2)(
-          // Reduced padding
-          (
-            d3.hierarchy({
-              children: peopleInSkill,
-            }) as d3.HierarchyNode<PersonNode>
-          ).sum(() => 1),
-        );
-
-        const leaves = root.leaves();
-        leaves.forEach((leaf, i) => {
-          if (peopleInSkill[i]) {
-            peopleInSkill[i].x = leaf.x - calculatedRadius;
-            peopleInSkill[i].y = leaf.y - calculatedRadius;
-          }
-        });
-      }
 
       // Identify Group (Set Intersection)
       const setKey = skill.belongsTo.slice().sort().join(',');
@@ -264,7 +242,7 @@ const SkillChart: React.FC<SkillChartProps> = ({
         id: skill.id,
         name: skill.name,
         categories: skill.belongsTo,
-        people: peopleInSkill,
+        people: peopleInSkill, // No longer need x/y from pack
         r: calculatedRadius,
         groupId: setKey,
         x: group.x + (Math.random() - 0.5) * 50,
@@ -389,7 +367,7 @@ const SkillChart: React.FC<SkillChartProps> = ({
         const group = groups.find((g) => g.id === d.groupId);
         if (group) {
           // k determines how tight the cluster is. stronger k = tighter.
-          const k = 0.05 * alpha;
+          const k = 0.1 * alpha;
           d.vx! += (group.x! - d.x!) * k;
           d.vy! += (group.y! - d.y!) * k;
         }
@@ -408,7 +386,7 @@ const SkillChart: React.FC<SkillChartProps> = ({
           if (isMember) {
             // Stay INSIDE: If dist > radius, push IN
             if (dist > circle.radius - d.r) {
-              const k = (dist - (circle.radius - d.r)) * 5 * alpha;
+              const k = (dist - (circle.radius - d.r)) * 0.1 * alpha;
               d.vx! -= (dx / dist) * k;
               d.vy! -= (dy / dist) * k;
             }
@@ -452,94 +430,123 @@ const SkillChart: React.FC<SkillChartProps> = ({
       .join('g')
       .call(drag(skillSimulation, groupSimulation)); // Modified drag to wake up both?
 
-    // Skill Circle - Glassmorphism style
-    // 1. Base Body (Transparent Fill)
-    skillNodes
-      .append('circle')
-      .attr('r', (d) => d.r)
-      .attr('fill', 'rgba(255, 255, 255, 0.03)') // Very transparent fill
-      .style('filter', 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))');
+    // --- Skill Pie Chart ---
 
-    // 2. Colored Outlines (Partial Arcs)
+    // 1. Label background (optional, for legibility if needed, but we used stroke before)
+    // We already have strokes for categories. Let's keep the category awareness
+    // but maybe as an outer ring or just implicit in position.
+    // The user wants "pie chart". So the *body* of the circle is the pie.
+
     skillNodes.each(function (d) {
-      if (!d.categories || d.categories.length === 0) return;
       const g = d3.select(this);
+
+      // Pie Generator
+      const pie = d3
+        .pie<PersonNode>()
+        .value(1) // Equal size slices for members
+        .padAngle(0.1) // Add gap between slices
+        .sort((a, b) => {
+          // Sort by proficiency so colors are grouped
+          const order = {
+            expert: 0,
+            advanced: 1,
+            intermediate: 2,
+            beginner: 3,
+          };
+          return (
+            (order[a.proficiency as keyof typeof order] || 4) -
+            (order[b.proficiency as keyof typeof order] || 4)
+          );
+        });
 
       const arcGen = d3
-        .arc<any>()
-        .innerRadius(d.r)
+        .arc<d3.PieArcDatum<PersonNode>>()
+        .innerRadius(0)
         .outerRadius(d.r)
-        .cornerRadius(0);
+        .cornerRadius(3); // Round corners
 
-      const pie = d3
-        .pie<string>()
-        .value(1) // Equal size segments
-        .sort(null); // Keep order of categories
+      const pieData = pie(d.people);
 
-      const arcsData = pie(d.categories);
-
-      g.selectAll('path.skill-stroke')
-        .data(arcsData)
+      // Render Slices
+      g.selectAll('path.slice')
+        .data(pieData)
         .join('path')
-        .attr('class', 'skill-stroke')
-        .attr('d', (a) => arcGen(a as any)) // Cast to any to calm TS for simple arc usage
-        .attr('fill', 'none')
-        .attr('stroke', (a) => {
-          const cat = categoryMap.get(a.data);
-          return cat ? cat.color : '#ccc';
+        .attr('class', 'slice')
+        .attr('d', arcGen)
+        .attr('fill', (slice) => {
+          const p = slice.data;
+          // Use centralized vibrant palette
+          // Expert: Pinkish Purple, Advanced: Bright Blue, Intermediate: Emerald Green
+          if (p.proficiency === 'expert') return PROFICIENCY_COLORS.expert;
+          if (p.proficiency === 'advanced') return PROFICIENCY_COLORS.advanced;
+          if (p.proficiency === 'intermediate')
+            return PROFICIENCY_COLORS.intermediate;
+          return PROFICIENCY_COLORS.beginner;
         })
-        .attr('stroke-width', 2) // Thicker for visibility
-        .attr('stroke-opacity', 0.8)
-        .style('stroke-linecap', d.categories.length > 1 ? 'butt' : 'round');
-    });
-
-    // Skill Label
-    skillNodes
-      .append('text')
-      .attr('y', (d) => -d.r - 8)
-      .attr('text-anchor', 'middle')
-      .attr('font-size', '9px') // Smaller skill text (was 10px)
-      .attr('font-weight', '500')
-      .attr('fill', '#e0e0e0')
-      .text((d) => d.name)
-      .attr('pointer-events', 'none')
-      .style('text-shadow', '0 2px 4px rgba(0,0,0,0.8)'); // Better readability
-
-    // --- Render People inside Skills ---
-    skillNodes.each(function (d) {
-      if (!d.people || d.people.length === 0) return;
-      const g = d3.select(this);
-
-      g.selectAll('circle.person')
-        .data(d.people)
-        .join('circle')
-        .attr('class', 'person')
-        .attr('cx', (p) => p.x!)
-        .attr('cy', (p) => p.y!)
-        .attr('r', 3) // Smaller person dots
-        .attr('fill', (p) => {
-          // Use Proficiency colors aligned with theme
-          // Expert: Purple, Advanced: Green, Intermediate: Orange
-          if (p.proficiency === 'expert') return '#9b59b6';
-          if (p.proficiency === 'advanced') return '#27ae60';
-          if (p.proficiency === 'intermediate') return '#f39c12';
-          return '#95a5a6'; // Beginner
+        // Removed heavy stroke, using padAngle for separation
+        .style('cursor', 'pointer')
+        .style('transition', 'opacity 0.2s')
+        .on('mouseover', function () {
+          d3.select(this).style('opacity', 0.8);
         })
-        .attr('stroke', 'rgba(255,255,255,0.8)')
-        .attr('stroke-width', 1.5)
-        .style('cursor', 'pointer') // Add cursor pointer
-        .on('click', (event, p) => {
-          event.stopPropagation(); // Prevent drag interference if any
-          // Find full member object
-          const fullMember = skillsData.members.find((m) => m.id === p.id);
+        .on('mouseout', function () {
+          d3.select(this).style('opacity', 1);
+        })
+        .on('click', (event, slice) => {
+          event.stopPropagation();
+          const fullMember = skillsData.members.find(
+            (m) => m.id === slice.data.id,
+          );
           if (fullMember && onMemberClick) {
             onMemberClick(fullMember as Member);
           }
         })
-        .style('filter', 'drop-shadow(0 2px 3px rgba(0,0,0,0.3))')
         .append('title')
-        .text((p) => `${p.name} (${p.role})\n${p.proficiency}`);
+        .text(
+          (slice) =>
+            `${slice.data.name} (${slice.data.role})\n${slice.data.proficiency}`,
+        );
+
+      // 2. Outer Ring for Categories (Visual Context)
+      if (d.categories && d.categories.length > 0) {
+        const ringArcGen = d3
+          .arc<any>()
+          .innerRadius(d.r + 3) // Slightly further out
+          .outerRadius(d.r + 5)
+          .cornerRadius(2);
+
+        const ringPie = d3.pie<string>().value(1).padAngle(0.05).sort(null);
+
+        const ringData = ringPie(d.categories);
+
+        g.selectAll('path.cat-ring')
+          .data(ringData)
+          .join('path')
+          .attr('class', 'cat-ring')
+          .attr('d', (a) => ringArcGen(a as any))
+          .attr('fill', (a) => {
+            const cat = categoryMap.get(a.data);
+            return cat ? cat.color : '#ccc';
+          })
+          .attr('fill-opacity', 0.9);
+      }
     });
+
+    // Skill Label (on top of pie)
+    // Add a text background for readability?
+    skillNodes
+      .append('text')
+      .attr('y', (d) => -d.r - 10) // Lift slightly higher
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '11px') // Slightly larger
+      .attr('font-weight', '700')
+      .attr('fill', '#fff')
+      .text((d) => d.name)
+      .attr('pointer-events', 'none')
+      .style(
+        'text-shadow',
+        '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)',
+      );
 
     // Cleanup
     return () => {
