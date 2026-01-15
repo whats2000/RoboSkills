@@ -279,11 +279,52 @@ const SkillChart: React.FC<SkillChartProps> = ({
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 8])
+
       .on('zoom', (event) => {
         container.attr('transform', event.transform);
       });
 
+    // Handle background click to reset zoom
+    svg.on('click', () => {
+      resetZoom();
+    });
+
     svg.call(zoom);
+
+    // Zoom focus helper
+    const zoomToNode = (d: SkillNode) => {
+      if (d.x === undefined || d.y === undefined) return;
+      const zoomLevel = 4;
+      const transform = d3.zoomIdentity
+        .translate(dimensions.width / 2, dimensions.height / 2)
+        .scale(zoomLevel)
+        .translate(-d.x, -d.y);
+
+      svg.transition().duration(750).call(zoom.transform, transform);
+
+      // Fade out others
+      container.selectAll('.skills g').transition().duration(500).style('opacity', 0.1);
+      container.selectAll('.categories circle').transition().duration(500).style('opacity', 0.05);
+      container.selectAll('.categories text').transition().duration(500).style('opacity', 0.05);
+      
+      // Highlight selected
+      // We need to select the specific group for this node. identifying by ID if possible or just passing the element.
+      // Since we have 'd', we can select by data match or ID if we assigned one. 
+      // Let's assume we can filter.
+      container.selectAll('.skills g')
+        .filter((node: any) => node.id === d.id)
+        .transition().duration(500)
+        .style('opacity', 1);
+    };
+
+    const resetZoom = () => {
+      svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+       
+      // Restore opacity
+      container.selectAll('.skills g').transition().duration(500).style('opacity', 1);
+      container.selectAll('.categories circle').transition().duration(500).style('opacity', 1);
+      container.selectAll('.categories text').transition().duration(500).style('opacity', 1);
+    };
 
     // --- Draw Category Foci Backgrounds (Venn Circles) ---
     // Using simple circles for background regions
@@ -494,6 +535,7 @@ const SkillChart: React.FC<SkillChartProps> = ({
         })
         .on('click', (event, slice) => {
           event.stopPropagation();
+          zoomToNode(d);
           const fullMember = skillsData.members.find(
             (m) => m.id === slice.data.id,
           );
@@ -528,7 +570,12 @@ const SkillChart: React.FC<SkillChartProps> = ({
             const cat = categoryMap.get(a.data);
             return cat ? cat.color : '#ccc';
           })
-          .attr('fill-opacity', 0.9);
+          .attr('fill-opacity', 0.9)
+          .style('cursor', 'pointer')
+          .on('click', (event) => {
+            event.stopPropagation();
+            zoomToNode(d);
+          });
       }
     });
 
@@ -542,11 +589,15 @@ const SkillChart: React.FC<SkillChartProps> = ({
       .attr('font-weight', '700')
       .attr('fill', '#fff')
       .text((d) => d.name)
-      .attr('pointer-events', 'none')
+      .style('cursor', 'pointer') // Make it look clickable
       .style(
         'text-shadow',
         '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)',
-      );
+      )
+      .on('click', (event, d) => {
+        event.stopPropagation();
+        zoomToNode(d);
+      });
 
     // Cleanup
     return () => {
