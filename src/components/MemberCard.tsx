@@ -28,8 +28,6 @@ const SkillTag: React.FC<{
     .filter(Boolean);
 
   const isOverlap = categories.length > 1;
-  const primaryColor = categories[0]?.color || '#6366f1';
-
   return (
     <Tooltip
       title={
@@ -49,11 +47,9 @@ const SkillTag: React.FC<{
       <Tag
         className='category-badge m-1'
         style={{
-          background: isOverlap
-            ? `linear-gradient(135deg, ${categories.map((c) => c?.color).join(', ')})`
-            : `${primaryColor}20`,
-          borderColor: primaryColor,
-          color: isOverlap ? '#fff' : primaryColor,
+          background: `${PROFICIENCY_COLORS[skill.proficiency]}20`,
+          borderColor: PROFICIENCY_COLORS[skill.proficiency],
+          color: PROFICIENCY_COLORS[skill.proficiency],
         }}
       >
         <span
@@ -75,17 +71,42 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   const categoryWeights = getMemberCategoryWeights(member, data);
   const blendedColor = getMemberBlendedColor(categoryWeights, data.categories);
 
-  // Group skills by their primary category
+  // Group skills by ALL categories they belong to
   const skillsByCategory: Record<string, MemberSkill[]> = {};
   for (const memberSkill of member.skills) {
     const skill = getSkillById(data.skills, memberSkill.skillId);
     if (!skill) continue;
-    const primaryCat = skill.belongsTo[0];
-    if (!skillsByCategory[primaryCat]) {
-      skillsByCategory[primaryCat] = [];
-    }
-    skillsByCategory[primaryCat].push(memberSkill);
+
+    // Add skill to all categories it belongs to
+    skill.belongsTo.forEach((catId) => {
+      if (!skillsByCategory[catId]) {
+        skillsByCategory[catId] = [];
+      }
+      skillsByCategory[catId].push(memberSkill);
+    });
   }
+
+  // Sort skills by proficiency (High to Low)
+  const proficiencyWeight: Record<string, number> = {
+    expert: 4,
+    advanced: 3,
+    intermediate: 2,
+    beginner: 1,
+  };
+
+  Object.values(skillsByCategory).forEach((skills) => {
+    skills.sort((a, b) => {
+      const weightA = proficiencyWeight[a.proficiency] || 0;
+      const weightB = proficiencyWeight[b.proficiency] || 0;
+      return weightB - weightA;
+    });
+  });
+
+  const [expanded, setExpanded] = React.useState(false);
+  const INITIAL_VISIBLE_COUNT = 5;
+  const hasHiddenSkills = Object.values(skillsByCategory).some(
+    (skills) => skills.length > INITIAL_VISIBLE_COUNT,
+  );
 
   return (
     <Card
@@ -168,6 +189,13 @@ export const MemberCard: React.FC<MemberCardProps> = ({
       <div className='mt-4'>
         {Object.entries(skillsByCategory).map(([categoryId, skills]) => {
           const category = data.categories.find((c) => c.id === categoryId);
+          const visibleSkills = expanded
+            ? skills
+            : skills.slice(0, INITIAL_VISIBLE_COUNT);
+          const hiddenCount = skills.length - visibleSkills.length;
+
+          if (visibleSkills.length === 0) return null;
+
           return (
             <div key={categoryId} className='mb-2'>
               <span
@@ -177,13 +205,40 @@ export const MemberCard: React.FC<MemberCardProps> = ({
                 {category?.name || categoryId}
               </span>
               <Flex wrap={true} gap={5}>
-                {skills.map((skill) => (
+                {visibleSkills.map((skill) => (
                   <SkillTag key={skill.skillId} skill={skill} data={data} />
                 ))}
+                {!expanded && hiddenCount > 0 && (
+                  <Tag
+                    className='!mt-2 cursor-pointer hover:opacity-80 transition-opacity'
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      border: '1px dashed rgba(255, 255, 255, 0.3)',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setExpanded(true);
+                    }}
+                  >
+                    +{hiddenCount} more
+                  </Tag>
+                )}
               </Flex>
             </div>
           );
         })}
+        {expanded && hasHiddenSkills && (
+          <div
+            className='text-center mt-2 cursor-pointer text-xs text-gray-400 hover:text-white transition-colors'
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(false);
+            }}
+          >
+            Show Less
+          </div>
+        )}
       </div>
     </Card>
   );
