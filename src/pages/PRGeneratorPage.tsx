@@ -57,6 +57,135 @@ export const PRGeneratorPage: React.FC = () => {
 
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillCategories, setNewSkillCategories] = useState<string[]>([]);
+  const [githubToken, setGithubToken] = useState('');
+  const [creatingPR, setCreatingPR] = useState(false);
+  const [prType, setPrType] = useState<'member' | 'skill' | null>(null);
+
+  const createPR = async () => {
+    if (!githubToken) {
+      void message.error('Please enter your GitHub Personal Access Token');
+      return;
+    }
+
+    setCreatingPR(true);
+    try {
+      // Dynamic import to avoid issues if not used
+      const { Octokit } = await import('octokit');
+      const octokit = new Octokit({ auth: githubToken });
+
+      const OWNER = 'whats2000';
+      const REPO = 'RoboSkills';
+      const FILE_PATH = 'public/data/skillsData.json';
+      const BRANCH_NAME = `content-update-${Date.now()}`;
+
+      // 1. Get current Main SHA
+      const { data: refData } = await octokit.request(
+        'GET /repos/{owner}/{repo}/git/ref/heads/main',
+        {
+          owner: OWNER,
+          repo: REPO,
+        },
+      );
+      const mainSha = refData.object.sha;
+
+      // 2. Create new branch
+      await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+        owner: OWNER,
+        repo: REPO,
+        ref: `refs/heads/${BRANCH_NAME}`,
+        sha: mainSha,
+      });
+
+      // 3. Get current file content (to ensure we have latest and the SHA for update)
+      const { data: fileData } = await octokit.request(
+        'GET /repos/{owner}/{repo}/contents/{path}',
+        {
+          owner: OWNER,
+          repo: REPO,
+          path: FILE_PATH,
+        },
+      );
+
+      if (!Array.isArray(fileData) && fileData.type === 'file') {
+        const decodedContent = atob(fileData.content.replace(/\n/g, ''));
+        const currentContent = JSON.parse(decodedContent);
+
+        // Update content locally
+        const updatedContent = { ...currentContent };
+
+        if (prType === 'member') {
+          if (editMode === 'new' && !selectedMember) {
+            // Adding a new member
+            const memberId = `member-${Date.now()}`;
+            const newMember = {
+              id: memberId,
+              name: form.getFieldValue('name'),
+              role: form.getFieldValue('role'),
+              email: form.getFieldValue('email'),
+              github: form.getFieldValue('github'),
+              skills: skills,
+            };
+            updatedContent.members.push(newMember);
+          } else if (editMode === 'edit' && selectedMember) {
+            // Updating member
+            const updatedMember = {
+              ...selectedMember,
+              name: form.getFieldValue('name'),
+              role: form.getFieldValue('role'),
+              email: form.getFieldValue('email'),
+              github: form.getFieldValue('github'),
+              skills: skills,
+            };
+            updatedContent.members = updatedContent.members.map((m: any) =>
+              m.id === selectedMember.id ? updatedMember : m,
+            );
+          }
+        } else if (prType === 'skill') {
+          const skillId = newSkillName.toLowerCase().replace(/\s+/g, '-');
+          const newSkill = {
+            id: skillId,
+            name: newSkillName,
+            description: `Description for ${newSkillName}`,
+            belongsTo: newSkillCategories,
+          };
+          updatedContent.skills.push(newSkill);
+        }
+
+        // 4. Commit file update
+        await octokit.request('PUT /repos/{owner}/{repo}/contents/{path}', {
+          owner: OWNER,
+          repo: REPO,
+          path: FILE_PATH,
+          message: `chore: update data for ${prType === 'skill' ? newSkillName : form.getFieldValue('name')}`,
+          content: btoa(JSON.stringify(updatedContent, null, 2)),
+          branch: BRANCH_NAME,
+          sha: fileData.sha,
+        });
+
+        // 5. Create PR
+        const { data: prData } = await octokit.request(
+          'POST /repos/{owner}/{repo}/pulls',
+          {
+            owner: OWNER,
+            repo: REPO,
+            title: `Update: ${prType === 'skill' ? newSkillName : form.getFieldValue('name')}`,
+            body: prContent,
+            head: BRANCH_NAME,
+            base: 'main',
+          },
+        );
+
+        void message.success('Pull Request created successfully!');
+        window.open(prData.html_url, '_blank');
+        setModalOpen(false);
+      }
+    } catch (error: any) {
+      console.error(error);
+      void message.error(`Failed to create PR: ${error.message}`);
+    } finally {
+      setCreatingPR(false);
+    }
+  };
 
   // Calculate role options mixing common roles and existing roles
   const roleOptions = React.useMemo(() => {
@@ -175,6 +304,7 @@ ${(() => {
 `;
 
     setPrContent(content);
+    setPrType('member');
     setModalOpen(true);
   };
 
@@ -223,9 +353,8 @@ ${newSkillCategories
 `;
 
     setPrContent(content);
+    setPrType('skill');
     setModalOpen(true);
-    setNewSkillName('');
-    setNewSkillCategories([]);
   };
 
   const copyToClipboard = () => {
@@ -504,31 +633,61 @@ ${newSkillCategories
 
       {/* PR Content Modal */}
       <Modal
-        title='Pull Request Content'
+        title='Pull Request'
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
-        footer={[
-          <Button key='close' onClick={() => setModalOpen(false)}>
-            Close
-          </Button>,
-          <Button
-            key='copy'
-            type='primary'
-            icon={<CopyOutlined />}
-            onClick={copyToClipboard}
-          >
-            Copy to Clipboard
-          </Button>,
-        ]}
         width={800}
+        footer={null}
       >
-        <TextArea
-          value={prContent}
-          rows={20}
-          readOnly
-          className='font-mono text-sm'
-          style={{ background: '#1a1a2e', color: '#fff' }}
-        />
+        <div className='space-y-4'>
+          <div className='bg-blue-500/10 border border-blue-500/20 p-4 rounded-lg'>
+            <h4 className='font-semibold text-blue-400 mb-2'>
+              Automatic PR Creation
+            </h4>
+            <p className='text-sm text-gray-400 mb-3'>
+              Enter your GitHub Personal Access Token (PAT) with 'repo' scope to
+              automatically create this PR.
+            </p>
+            <div className='flex gap-2'>
+              <Input.Password
+                placeholder='ghp_...'
+                value={githubToken}
+                onChange={(e) => setGithubToken(e.target.value)}
+              />
+              <Button
+                type='primary'
+                loading={creatingPR}
+                onClick={createPR}
+                icon={<GithubOutlined />}
+              >
+                Create PR
+              </Button>
+            </div>
+          </div>
+
+          <Divider className='!my-4 border-gray-700'>
+            OR Manual Creation
+          </Divider>
+
+          <TextArea
+            value={prContent}
+            rows={10}
+            readOnly
+            className='font-mono text-sm'
+            style={{ background: '#1a1a2e', color: '#fff' }}
+          />
+
+          <div className='flex justify-end gap-2'>
+            <Button onClick={() => setModalOpen(false)}>Close</Button>
+            <Button
+              type='default'
+              icon={<CopyOutlined />}
+              onClick={copyToClipboard}
+            >
+              Copy to Clipboard
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
