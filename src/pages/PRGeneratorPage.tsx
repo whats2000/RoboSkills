@@ -903,7 +903,7 @@ ${newSkillCategories
             style={{ background: '#1a1a2e', color: '#fff' }}
           />
 
-          <div className='flex justify-end gap-2'>
+          <div className='flex justify-end gap-2 mt-4'>
             <Button onClick={() => setModalOpen(false)}>Close</Button>
             <Button
               type='default'
