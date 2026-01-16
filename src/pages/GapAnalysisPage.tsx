@@ -295,6 +295,7 @@ export const GapAnalysisPage: React.FC = () => {
           pagination={{ pageSize: 10 }}
           className='skill-gap-table'
           style={{ background: 'transparent' }}
+          scroll={{ x: 'max-content' }}
         />
       </Card>
 

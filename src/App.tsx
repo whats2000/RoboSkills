@@ -64,7 +64,7 @@ const Navigation: React.FC<{
             collapsed ? 'justify-center' : 'justify-between px-6'
           }`}
         >
-          <div className='flex items-center gap-2'>
+          <Link to='/' className='flex items-center gap-2'>
             <img
               src={`${import.meta.env.BASE_URL}logo.svg`}
               alt='RoboSkills Logo'
@@ -75,7 +75,7 @@ const Navigation: React.FC<{
                 RoboSkills
               </span>
             )}
-          </div>
+          </Link>
           {!collapsed && (
             <a
               href='https://github.com/whats2000/RoboSkills'
@@ -111,7 +111,7 @@ const Navigation: React.FC<{
           justifyContent: 'space-between',
         }}
       >
-        <div className='flex items-center gap-2'>
+        <Link to='/' className='flex items-center gap-2'>
           <img
             src={`${import.meta.env.BASE_URL}logo.svg`}
             alt='RoboSkills Logo'
@@ -120,7 +120,7 @@ const Navigation: React.FC<{
           <span className='text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent'>
             RoboSkills
           </span>
-        </div>
+        </Link>
         <div className='flex items-center gap-4'>
           <a
             href='https://github.com/whats2000/RoboSkills'
