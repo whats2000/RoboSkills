@@ -304,11 +304,71 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
         });
 
       // Handle background click to reset zoom
-      svg.on('click', () => {
-        resetZoom();
+      svg.on('click', (event) => {
+        resetZoom(event);
       });
 
       svg.call(zoom);
+
+      let currentFocusedSkillId: string | null = null;
+
+      // Helper: Reset all opacity to default
+      const resetOpacity = () => {
+        container
+          .selectAll('.skills g')
+          .transition()
+          .duration(500)
+          .style('opacity', 1);
+        container
+          .selectAll('.categories circle')
+          .transition()
+          .duration(500)
+          .style('opacity', 1);
+        container
+          .selectAll('.categories text')
+          .transition()
+          .duration(500)
+          .style('opacity', 1);
+        container
+          .selectAll('.slice')
+          .transition()
+          .duration(500)
+          .style('opacity', 1);
+
+        // Hide names and lines
+        container
+          .selectAll('.name-label')
+          .transition()
+          .duration(500)
+          .style('opacity', 0);
+        container
+          .selectAll('.name-link')
+          .transition()
+          .duration(500)
+          .style('opacity', 0);
+      };
+
+      // Helper: Apply user highlight visuals
+      const applyUserHighlight = (highlightUserId: string) => {
+        // 1. Fade OUT skills that DO NOT have this user
+        container
+          .selectAll<SVGGElement, SkillNode>('.skills g')
+          .transition()
+          .duration(500)
+          .style('opacity', (node) => {
+            const hasUser = node.people.some((p) => p.id === highlightUserId);
+            return hasUser ? 1 : 0.1;
+          });
+
+        // 2. Inside visible skills, fade out OTHER users
+        container
+          .selectAll<SVGPathElement, d3.PieArcDatum<PersonNode>>('.slice')
+          .transition()
+          .duration(500)
+          .style('opacity', (slice) => {
+            return slice.data.id === highlightUserId ? 1 : 0.1;
+          });
+      };
 
       // Zoom focus helper
       const zoomToNode = (
@@ -317,6 +377,9 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
         skipZoom?: boolean,
       ) => {
         if (d.x === undefined || d.y === undefined) return;
+
+        currentFocusedSkillId = d.id;
+
         const zoomLevel = 4;
         const transform = d3.zoomIdentity
           .translate(dimensions.width / 2, dimensions.height / 2)
@@ -329,26 +392,7 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
 
         if (highlightUserId) {
           // Mode: User Highlighted
-          // 1. Fade OUT skills that DO NOT have this user
-          container
-            .selectAll('.skills g')
-            .transition()
-            .duration(500)
-            .style('opacity', (node: any) => {
-              const hasUser = node.people.some(
-                (p: any) => p.id === highlightUserId,
-              );
-              return hasUser ? 1 : 0.1;
-            });
-
-          // 2. Inside visible skills, fade out OTHER users
-          container
-            .selectAll('.slice')
-            .transition()
-            .duration(500)
-            .style('opacity', (slice: any) => {
-              return slice.data.id === highlightUserId ? 1 : 0.1;
-            });
+          applyUserHighlight(highlightUserId);
         } else {
           // Mode: Simple Skill Focus
           container
@@ -396,47 +440,53 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
         }
       };
 
-      const resetZoom = () => {
-        selectionRef.current = null;
-        setSelectedMemberId(null);
-        if (onSelectionChange) onSelectionChange(null);
-        linkLayer.selectAll('*').remove(); // Clear links
+      const resetZoom = (event?: MouseEvent | CustomEvent) => {
+        let forceDeselect = false;
+        if (event && 'detail' in event && event.detail) {
+          forceDeselect =
+            (event.detail as { forceDeselect?: boolean }).forceDeselect ||
+            false;
+        }
 
-        svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+        // Check actual visual zoom state
+        // If user manually scrolled out, k will be near 1, but currentFocusedSkillId might still be set.
+        // We shouldn't require a 'zoom out' click if we are already zoomed out.
+        const currentTransform = svgRef.current
+          ? d3.zoomTransform(svgRef.current)
+          : d3.zoomIdentity;
+        const isZoomedOut = currentTransform.k < 1.5;
 
-        // Restore opacity
-        container
-          .selectAll('.skills g')
-          .transition()
-          .duration(500)
-          .style('opacity', 1);
-        container
-          .selectAll('.categories circle')
-          .transition()
-          .duration(500)
-          .style('opacity', 1);
-        container
-          .selectAll('.categories text')
-          .transition()
-          .duration(500)
-          .style('opacity', 1);
-        container
-          .selectAll('.slice')
-          .transition()
-          .duration(500)
-          .style('opacity', 1);
+        // Scenario 1: Zoomed In -> Zoom Out (only if NOT forced and NOT already zoomed out)
+        if (!forceDeselect && !isZoomedOut && currentFocusedSkillId) {
+          svg.transition().duration(750).call(zoom.transform, d3.zoomIdentity);
+          currentFocusedSkillId = null;
 
-        // Hide names and lines
-        container
-          .selectAll('.name-label')
-          .transition()
-          .duration(500)
-          .style('opacity', 0);
-        container
-          .selectAll('.name-link')
-          .transition()
-          .duration(500)
-          .style('opacity', 0);
+          // If User Selected, KEEP Highlight
+          if (selectionRef.current?.userId) {
+            applyUserHighlight(selectionRef.current.userId);
+          } else {
+            // If No User, Reset All
+            resetOpacity();
+          }
+        }
+        // Scenario 2: Zoomed Out (or Forced) -> Deselect User & Reset State
+        else {
+          if (selectionRef.current) {
+            selectionRef.current = null;
+            setSelectedMemberId(null);
+            if (onSelectionChange) onSelectionChange(null);
+            linkLayer.selectAll('*').remove(); // Clear links
+            resetOpacity();
+          }
+          // Ensure zoom is reset to perfect identity if forced or if we are cleaning up a focus state
+          if (forceDeselect || currentFocusedSkillId) {
+            svg
+              .transition()
+              .duration(750)
+              .call(zoom.transform, d3.zoomIdentity);
+            currentFocusedSkillId = null;
+          }
+        }
       };
 
       // --- Draw Category Foci Backgrounds (Venn Circles) ---
@@ -921,7 +971,13 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
                     className='absolute top-2 right-2 hover:bg-white/10'
                     onClick={() => {
                       const svg = d3.select(svgRef.current);
-                      svg.dispatch('click'); // Trigger background reset
+                      // Dispatch with custom property
+                      // D3 expects CustomEventParameters where bubbles/cancelable are generally required or specific
+                      svg.dispatch('click', {
+                        detail: { forceDeselect: true },
+                        bubbles: true,
+                        cancelable: true,
+                      });
                     }}
                   />
                 </div>
