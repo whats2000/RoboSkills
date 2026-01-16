@@ -127,5 +127,6 @@ This project is licensed under the terms of the [LICENSE](./LICENSE) file.
 
 This project incorporates code from external libraries. We thank the authors for their work:
 
-*   **[d3-venn](https://github.com/christophe-g/d3-venn)** by Christophe Geiser (BSD 3-Clause License)
-*   **[venn.js](https://github.com/benfred/venn.js)** by Ben Frederickson (MIT License)
+- **[d3-venn](https://github.com/christophe-g/d3-venn)** by Christophe Geiser (BSD 3-Clause License)
+- **[venn.js](https://github.com/benfred/venn.js)** by Ben Frederickson (MIT License)
+- **[spa-github-pages](https://github.com/rafgraph/spa-github-pages)** by Rafael Pedicini (MIT License)
