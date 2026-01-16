@@ -8,6 +8,10 @@
     analyzing skill gaps, and managing expertise distribution.
   </p>
 
+  <br />
+  <img src="public/og-image.png" alt="RoboSkills Preview" width="100%" />
+  <br />
+
   <p>
     <a href="https://whats2000.github.io/RoboSkills/">Live Demo</a> •
     <a href="#features">Features</a> •
