@@ -30,103 +30,154 @@
       "id": "task-planning",
       "name": "Task Planning",
       "description": "High-level task decomposition and planning",
-      "belongsTo": ["environment"]
+      "belongsTo": [
+        "environment"
+      ]
     },
     {
       "id": "simulation",
       "name": "Simulation",
       "description": "Robot and environment simulation",
-      "belongsTo": ["environment", "robots"]
+      "belongsTo": [
+        "environment",
+        "robots"
+      ]
     },
     {
       "id": "env-modeling",
       "name": "Environment Modeling",
       "description": "Spatial and semantic environment understanding",
-      "belongsTo": ["environment", "robots"]
+      "belongsTo": [
+        "environment",
+        "robots"
+      ]
     },
     {
       "id": "multi-agent",
       "name": "Multi-Agent Systems",
       "description": "Coordination and communication between agents",
-      "belongsTo": ["environment", "robots", "caregiver"]
+      "belongsTo": [
+        "environment",
+        "robots",
+        "caregiver"
+      ]
     },
     {
       "id": "robot-control",
       "name": "Robot Control",
       "description": "Motion control and trajectory planning",
-      "belongsTo": ["robots"]
+      "belongsTo": [
+        "robots"
+      ]
     },
     {
       "id": "robot-slam",
       "name": "Robot SLAM",
       "description": "Simultaneous localization and mapping",
-      "belongsTo": ["robots", "environment"]
+      "belongsTo": [
+        "robots",
+        "environment"
+      ]
     },
     {
       "id": "perception",
       "name": "Perception",
       "description": "Computer vision and sensor fusion",
-      "belongsTo": ["robots", "caregiver", "care-recipient"]
+      "belongsTo": [
+        "robots",
+        "caregiver",
+        "care-recipient"
+      ]
     },
     {
       "id": "hardware",
       "name": "Hardware Integration",
       "description": "Mechanical and electrical systems",
-      "belongsTo": ["robots"]
+      "belongsTo": [
+        "robots"
+      ]
     },
     {
       "id": "manipulation",
       "name": "Manipulation",
       "description": "Grasping and object manipulation",
-      "belongsTo": ["robots", "caregiver"]
+      "belongsTo": [
+        "robots",
+        "caregiver"
+      ]
     },
     {
       "id": "hri",
       "name": "Human-Robot Interaction",
       "description": "Natural interaction with humans",
-      "belongsTo": ["caregiver", "care-recipient"]
+      "belongsTo": [
+        "caregiver",
+        "care-recipient"
+      ]
     },
     {
       "id": "care-protocols",
       "name": "Care Protocols",
       "description": "Standard care procedures and workflows",
-      "belongsTo": ["caregiver", "care-recipient"]
+      "belongsTo": [
+        "caregiver",
+        "care-recipient"
+      ]
     },
     {
       "id": "monitoring",
       "name": "Health Monitoring",
       "description": "Vital signs and activity monitoring",
-      "belongsTo": ["caregiver", "care-recipient", "robots"]
+      "belongsTo": [
+        "caregiver",
+        "care-recipient",
+        "robots"
+      ]
     },
     {
       "id": "communication",
       "name": "Communication",
       "description": "Speech and gesture recognition",
-      "belongsTo": ["caregiver", "robots"]
+      "belongsTo": [
+        "caregiver",
+        "robots"
+      ]
     },
     {
       "id": "user-modeling",
       "name": "User Modeling",
       "description": "Understanding user preferences and needs",
-      "belongsTo": ["care-recipient", "caregiver"]
+      "belongsTo": [
+        "care-recipient",
+        "caregiver"
+      ]
     },
     {
       "id": "needs-assessment",
       "name": "Needs Assessment",
       "description": "Evaluating care requirements",
-      "belongsTo": ["care-recipient"]
+      "belongsTo": [
+        "care-recipient"
+      ]
     },
     {
       "id": "personalization",
       "name": "Personalization",
       "description": "Adapting robot behavior to individuals",
-      "belongsTo": ["care-recipient", "environment"]
+      "belongsTo": [
+        "care-recipient",
+        "environment"
+      ]
     },
     {
       "id": "safety",
       "name": "Safety Systems",
       "description": "Ensuring user safety and comfort",
-      "belongsTo": ["care-recipient", "robots", "caregiver"]
+      "belongsTo": [
+        "care-recipient",
+        "robots",
+        "caregiver"
+      ]
     }
   ],
   "members": [
@@ -137,10 +188,26 @@
       "email": "alice@lab.edu",
       "github": "alicechen",
       "skills": [
-        { "skillId": "robot-slam", "proficiency": "expert" },
-        { "skillId": "perception", "proficiency": "advanced" },
-        { "skillId": "simulation", "proficiency": "intermediate" },
-        { "skillId": "env-modeling", "proficiency": "advanced" }
+        {
+          "skillId": "robot-slam",
+          "proficiency": "expert"
+        },
+        {
+          "skillId": "perception",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "simulation",
+          "proficiency": "intermediate"
+        },
+        {
+          "skillId": "env-modeling",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "manipulation",
+          "proficiency": "intermediate"
+        }
       ]
     },
     {
@@ -150,10 +217,22 @@
       "email": "bob@lab.edu",
       "github": "bobwang",
       "skills": [
-        { "skillId": "hri", "proficiency": "expert" },
-        { "skillId": "communication", "proficiency": "advanced" },
-        { "skillId": "user-modeling", "proficiency": "advanced" },
-        { "skillId": "care-protocols", "proficiency": "intermediate" }
+        {
+          "skillId": "hri",
+          "proficiency": "expert"
+        },
+        {
+          "skillId": "communication",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "user-modeling",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "care-protocols",
+          "proficiency": "intermediate"
+        }
       ]
     },
     {
@@ -162,10 +241,22 @@
       "role": "Master Student",
       "email": "carol@lab.edu",
       "skills": [
-        { "skillId": "robot-control", "proficiency": "intermediate" },
-        { "skillId": "manipulation", "proficiency": "beginner" },
-        { "skillId": "task-planning", "proficiency": "intermediate" },
-        { "skillId": "multi-agent", "proficiency": "beginner" }
+        {
+          "skillId": "robot-control",
+          "proficiency": "intermediate"
+        },
+        {
+          "skillId": "manipulation",
+          "proficiency": "beginner"
+        },
+        {
+          "skillId": "task-planning",
+          "proficiency": "intermediate"
+        },
+        {
+          "skillId": "multi-agent",
+          "proficiency": "beginner"
+        }
       ]
     },
     {
@@ -175,10 +266,22 @@
       "email": "david@lab.edu",
       "github": "davidkim",
       "skills": [
-        { "skillId": "multi-agent", "proficiency": "advanced" },
-        { "skillId": "env-modeling", "proficiency": "expert" },
-        { "skillId": "perception", "proficiency": "intermediate" },
-        { "skillId": "simulation", "proficiency": "advanced" }
+        {
+          "skillId": "multi-agent",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "env-modeling",
+          "proficiency": "expert"
+        },
+        {
+          "skillId": "perception",
+          "proficiency": "intermediate"
+        },
+        {
+          "skillId": "simulation",
+          "proficiency": "advanced"
+        }
       ]
     },
     {
@@ -187,10 +290,22 @@
       "role": "Research Assistant",
       "email": "eva@lab.edu",
       "skills": [
-        { "skillId": "needs-assessment", "proficiency": "advanced" },
-        { "skillId": "safety", "proficiency": "intermediate" },
-        { "skillId": "care-protocols", "proficiency": "beginner" },
-        { "skillId": "monitoring", "proficiency": "intermediate" }
+        {
+          "skillId": "needs-assessment",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "safety",
+          "proficiency": "intermediate"
+        },
+        {
+          "skillId": "care-protocols",
+          "proficiency": "beginner"
+        },
+        {
+          "skillId": "monitoring",
+          "proficiency": "intermediate"
+        }
       ]
     },
     {
@@ -200,10 +315,22 @@
       "email": "frank@lab.edu",
       "github": "franklee",
       "skills": [
-        { "skillId": "hardware", "proficiency": "expert" },
-        { "skillId": "robot-control", "proficiency": "advanced" },
-        { "skillId": "safety", "proficiency": "advanced" },
-        { "skillId": "manipulation", "proficiency": "intermediate" }
+        {
+          "skillId": "hardware",
+          "proficiency": "expert"
+        },
+        {
+          "skillId": "robot-control",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "safety",
+          "proficiency": "advanced"
+        },
+        {
+          "skillId": "manipulation",
+          "proficiency": "intermediate"
+        }
       ]
     }
   ]
