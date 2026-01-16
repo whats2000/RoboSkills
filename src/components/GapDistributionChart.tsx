@@ -19,10 +19,10 @@ interface GapDistributionChartProps {
 
 interface CategoryExpertise {
   category: SkillCategory;
-  expertPct: number;
-  advancedPct: number;
-  intermediatePct: number;
-  beginnerPct: number;
+  expertCount: number;
+  advancedCount: number;
+  intermediateCount: number;
+  beginnerCount: number;
 }
 
 interface SkillData {
@@ -94,18 +94,21 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
             }
           });
         });
-        const total = expert + advanced + intermediate + beginner;
         return {
           category: cat,
-          expertPct: total > 0 ? (expert / total) * 100 : 0,
-          advancedPct: total > 0 ? (advanced / total) * 100 : 0,
-          intermediatePct: total > 0 ? (intermediate / total) * 100 : 0,
-          beginnerPct: total > 0 ? (beginner / total) * 100 : 0,
+          expertCount: expert,
+          advancedCount: advanced,
+          intermediateCount: intermediate,
+          beginnerCount: beginner,
         };
       })
       .filter(
         (c) =>
-          c.expertPct + c.advancedPct + c.intermediatePct + c.beginnerPct > 0,
+          c.expertCount +
+            c.advancedCount +
+            c.intermediateCount +
+            c.beginnerCount >
+          0,
       );
   }, [gaps, categories, members]);
 
@@ -203,14 +206,41 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
     const g = svg
       .append('g')
       .attr('transform', `translate(${centerX},${centerY})`);
-    const angleSlice = (Math.PI * 2) / categoryData.length;
 
-    [25, 50, 75, 100].forEach((level) => {
+    // Calculate max count for scaling
+    const maxCount = Math.max(
+      ...categoryData.flatMap((d) => [
+        d.expertCount,
+        d.advancedCount,
+        d.intermediateCount,
+        d.beginnerCount,
+      ]),
+      1,
+    );
+
+    // Create radial scale
+    const rScale = d3.scaleLinear().domain([0, maxCount]).range([0, radius]);
+    const ticks = rScale.ticks(4).slice(1); // Generate nice integer ticks, exclude 0
+
+    // Draw Grid Circles and Labels
+    ticks.forEach((tick) => {
+      const r = rScale(tick);
       g.append('circle')
-        .attr('r', (level / 100) * radius)
+        .attr('r', r)
         .attr('fill', 'none')
         .attr('stroke', 'rgba(255,255,255,0.08)');
+
+      g.append('text')
+        .attr('x', 0)
+        .attr('y', -r)
+        .attr('dy', -2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'rgba(255,255,255,0.3)')
+        .attr('font-size', '9px')
+        .text(tick);
     });
+
+    const angleSlice = (Math.PI * 2) / categoryData.length;
 
     categoryData.forEach((d, i) => {
       const angle = angleSlice * i - Math.PI / 2;
@@ -246,27 +276,74 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
 
     const radarLine = d3
       .lineRadial<number>()
-      .radius((d) => (d / 100) * radius)
+      .radius((d) => rScale(d))
       .angle((_, i) => i * angleSlice)
       .curve(d3.curveLinearClosed);
 
     [...EXPERTISE_LEVELS].reverse().forEach((level) => {
-      const levelKey = `${level}Pct` as keyof CategoryExpertise;
+      const levelKey = `${level}Count` as keyof CategoryExpertise;
       const values = categoryData.map((d) => d[levelKey] as number);
       const isHovered = hoveredLevel === level;
       const opacity = hoveredLevel === null ? 0.6 : isHovered ? 1 : 0.15;
+      const color = PROFICIENCY_COLORS[level];
 
+      // Draw the path
       g.append('path')
         .datum(values)
         .attr('d', radarLine)
-        .attr('fill', PROFICIENCY_COLORS[level])
+        .attr('fill', color)
         .attr('fill-opacity', opacity * 0.25)
-        .attr('stroke', PROFICIENCY_COLORS[level])
+        .attr('stroke', color)
         .attr('stroke-width', isHovered ? 2.5 : 1.5)
         .attr('stroke-opacity', opacity)
         .style('cursor', 'pointer')
         .on('mouseenter', () => setHoveredLevel(level))
         .on('mouseleave', () => setHoveredLevel(null));
+
+      // Draw invisible circles for tooltips at each vertex
+      categoryData.forEach((d, i) => {
+        const val = d[levelKey] as number;
+        const angle = angleSlice * i - Math.PI / 2; // -90 deg offset
+        // rScale is the radial scale we defined earlier
+        const r = rScale(val);
+        const cx = Math.cos(angle) * r;
+        const cy = Math.sin(angle) * r;
+
+        const circle = g
+          .append('circle')
+          .attr('cx', cx)
+          .attr('cy', cy)
+          .attr('r', 4)
+          .attr('fill', color)
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 1.5)
+          .attr('opacity', 0) // Hidden by default
+          .style('cursor', 'pointer');
+
+        // Show on hover of the circle itself OR if the level is hovered
+        if (isHovered) {
+          circle.attr('opacity', 1);
+        }
+
+        circle
+          .on('mouseenter', function () {
+            d3.select(this).attr('opacity', 1).attr('r', 6);
+            setHoveredLevel(level);
+          })
+          .on('mouseleave', function () {
+            d3.select(this)
+              .attr('opacity', hoveredLevel === level ? 1 : 0)
+              .attr('r', 4);
+            setHoveredLevel(null);
+          });
+
+        // Add Tooltip
+        circle
+          .append('title')
+          .text(
+            `${d.category.name}\n${PROFICIENCY_LABELS[level]}: ${val} people`,
+          );
+      });
     });
   }, [categoryData, selectedCategory, hoveredLevel]);
 

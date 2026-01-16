@@ -242,7 +242,7 @@ export const GapAnalysisPage: React.FC = () => {
       {/* Distribution Chart */}
       <Card className='glass-card !mb-10'>
         <h2 className='text-xl font-semibold text-white mb-4'>
-          📊 Skill Distribution Overview
+          Skill Distribution Overview
         </h2>
         <p className='text-gray-400 text-sm mb-4'>
           Inner ring shows categories, outer ring shows skills colored by health
@@ -259,7 +259,7 @@ export const GapAnalysisPage: React.FC = () => {
       {/* Cross-Domain Skills */}
       <Card className='glass-card !mb-10'>
         <h2 className='text-xl font-semibold text-white mb-4'>
-          🔗 Cross-Domain Skills (Collaboration Opportunities)
+          Cross-Domain Skills (Collaboration Opportunities)
         </h2>
         <p className='text-gray-400 text-sm mb-4'>
           These skills span multiple categories - great for interdisciplinary
