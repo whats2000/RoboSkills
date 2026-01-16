@@ -52,7 +52,7 @@ export const GapAnalysisPage: React.FC = () => {
   if (loading) {
     return (
       <div className='flex items-center justify-center h-96'>
-        <Spin size='large' tip='Analyzing skill gaps...' />
+        <Spin size='large' tip='Analyzing skill gaps...' fullscreen />
       </div>
     );
   }
@@ -240,7 +240,7 @@ export const GapAnalysisPage: React.FC = () => {
       </Row>
 
       {/* Distribution Chart */}
-      <Card className='glass-card'>
+      <Card className='glass-card !mb-10'>
         <h2 className='text-xl font-semibold text-white mb-4'>
           📊 Skill Distribution Overview
         </h2>
@@ -257,7 +257,7 @@ export const GapAnalysisPage: React.FC = () => {
       </Card>
 
       {/* Cross-Domain Skills */}
-      <Card className='glass-card'>
+      <Card className='glass-card !mb-10'>
         <h2 className='text-xl font-semibold text-white mb-4'>
           🔗 Cross-Domain Skills (Collaboration Opportunities)
         </h2>
@@ -295,7 +295,7 @@ export const GapAnalysisPage: React.FC = () => {
       </Card>
 
       {/* Gap Table */}
-      <Card className='glass-card'>
+      <Card className='glass-card !mb-10'>
         <h2 className='text-xl font-semibold text-white mb-4'>
           All Skills Coverage
         </h2>
