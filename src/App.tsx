@@ -12,6 +12,7 @@ import {
   SearchOutlined,
   PullRequestOutlined,
   MenuOutlined,
+  GithubOutlined,
 } from '@ant-design/icons';
 import OverviewPage from './pages/OverviewPage';
 import GapAnalysisPage from './pages/GapAnalysisPage';
@@ -58,16 +59,32 @@ const Navigation: React.FC<{
         }}
         trigger={null}
       >
-        <div className='h-16 flex items-center justify-center border-b border-white/10 gap-2'>
-          <img
-            src={`${import.meta.env.BASE_URL}logo.svg`}
-            alt='RoboSkills Logo'
-            className='w-8 h-8'
-          />
+        <div
+          className={`h-16 flex items-center border-b border-white/10 ${
+            collapsed ? 'justify-center' : 'justify-between px-6'
+          }`}
+        >
+          <div className='flex items-center gap-2'>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.svg`}
+              alt='RoboSkills Logo'
+              className='w-8 h-8'
+            />
+            {!collapsed && (
+              <span className='text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent'>
+                RoboSkills
+              </span>
+            )}
+          </div>
           {!collapsed && (
-            <span className='text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent'>
-              RoboSkills
-            </span>
+            <a
+              href='https://github.com/whats2000/RoboSkills'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='!text-white hover:!text-indigo-400 transition-colors flex items-center'
+            >
+              <GithubOutlined className='text-xl' />
+            </a>
           )}
         </div>
         <Menu
@@ -104,10 +121,20 @@ const Navigation: React.FC<{
             RoboSkills
           </span>
         </div>
-        <MenuOutlined
-          className='text-white text-xl cursor-pointer'
-          onClick={() => setCollapsed(!collapsed)}
-        />
+        <div className='flex items-center gap-4'>
+          <a
+            href='https://github.com/whats2000/RoboSkills'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='!text-white hover:!text-indigo-400 transition-colors flex items-center'
+          >
+            <GithubOutlined className='text-xl' />
+          </a>
+          <MenuOutlined
+            className='text-white text-xl cursor-pointer'
+            onClick={() => setCollapsed(!collapsed)}
+          />
+        </div>
       </Header>
 
       {/* Mobile Menu Overlay */}
