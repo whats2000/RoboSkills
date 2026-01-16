@@ -9,6 +9,7 @@
   </p>
 
   <p>
+    <a href="https://whats2000.github.io/RoboSkills/">Live Demo</a> •
     <a href="#features">Features</a> •
     <a href="#tech-stack">Tech Stack</a> •
     <a href="#getting-started">Getting Started</a> •
@@ -121,3 +122,10 @@ The output will be optimized and placed in the `dist` directory.
 ## 📄 License
 
 This project is licensed under the terms of the [LICENSE](./LICENSE) file.
+
+## 👏 Third Party Licenses
+
+This project incorporates code from external libraries. We thank the authors for their work:
+
+*   **[d3-venn](https://github.com/christophe-g/d3-venn)** by Christophe Geiser (BSD 3-Clause License)
+*   **[venn.js](https://github.com/benfred/venn.js)** by Ben Frederickson (MIT License)
