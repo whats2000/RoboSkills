@@ -23,6 +23,12 @@
       "name": "Care Recipient",
       "color": "#eb984e",
       "description": "Understanding and supporting care recipients"
+    },
+    {
+      "id": "test-create-category",
+      "name": "Test Create Category",
+      "description": "For test purpose",
+      "color": "#ff0000"
     }
   ],
   "skills": [
@@ -177,6 +183,17 @@
         "care-recipient",
         "robots",
         "caregiver"
+      ]
+    },
+    {
+      "id": "test-skill",
+      "name": "Test Skill",
+      "description": "A skill for testing PR",
+      "belongsTo": [
+        "environment",
+        "robots",
+        "caregiver",
+        "care-recipient"
       ]
     }
   ],
