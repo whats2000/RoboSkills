@@ -23,17 +23,6 @@
       "name": "Care Recipient",
       "color": "#eb984e",
       "description": "Understanding and supporting care recipients"
-    },
-    {
-      "id": "test-create-category",
-      "name": "Test Create Category",
-      "description": "For test purpose",
-      "color": "#ff0000"
-    },
-    {
-      "id": "test-create-category-2",
-      "name": "Test Create Category 2",
-      "color": "#00ff2f"
     }
   ],
   "skills": [
