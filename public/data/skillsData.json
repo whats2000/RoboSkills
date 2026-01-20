@@ -29,6 +29,11 @@
       "name": "Test Create Category",
       "description": "For test purpose",
       "color": "#ff0000"
+    },
+    {
+      "id": "test-create-category-2",
+      "name": "Test Create Category 2",
+      "color": "#00ff2f"
     }
   ],
   "skills": [
@@ -194,14 +199,6 @@
         "robots",
         "caregiver",
         "care-recipient"
-      ]
-    },
-    {
-      "id": "test-skill-2",
-      "name": "Test Skill 2",
-      "description": "Description for Test Skill 2",
-      "belongsTo": [
-        "test-create-category"
       ]
     }
   ],
