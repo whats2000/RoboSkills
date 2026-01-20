@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Input, Select, Spin, Empty } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useSkillsData } from '../hooks/useSkillsData';
@@ -9,8 +10,16 @@ const { Option } = Select;
 
 export const OverviewPage: React.FC = () => {
   const { data, loading, error } = useSkillsData();
+  const [searchParams] = useSearchParams();
+  const initialMemberName = searchParams.get('member');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const focusMemberId = React.useMemo(() => {
+    if (!data || !initialMemberName) return null;
+    const member = data.members.find((m) => m.name === initialMemberName);
+    return member ? member.id : null;
+  }, [data, initialMemberName]);
 
   const handleMemberClick = React.useCallback(() => {
     // Scroll to members grid
@@ -20,6 +29,16 @@ export const OverviewPage: React.FC = () => {
     }
   }, []);
 
+  // Sync initial URL param with search term once data is loaded
+  useEffect(() => {
+    if (data && focusMemberId) {
+      const member = data.members.find((m) => m.id === focusMemberId);
+      if (member) {
+        setSearchTerm(member.name);
+      }
+    }
+  }, [data, focusMemberId]);
+
   const handleSelectionChange = React.useCallback(
     (memberId: string | null) => {
       if (!data) return; // Guard against data being unavailable
@@ -28,6 +47,7 @@ export const OverviewPage: React.FC = () => {
         setSearchTerm('');
         return;
       }
+
       const member = data.members.find((m) => m.id === memberId);
       if (member) {
         setSearchTerm(member.name);
@@ -87,6 +107,7 @@ export const OverviewPage: React.FC = () => {
           data={data}
           onMemberClick={handleMemberClick}
           onSelectionChange={handleSelectionChange}
+          focusMemberId={focusMemberId}
           height={550}
         />
       </div>

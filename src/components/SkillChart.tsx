@@ -77,6 +77,7 @@ interface SkillChartProps {
   onSelectionChange?: (memberId: string | null) => void;
   width?: number;
   height?: number;
+  focusMemberId?: string | null;
 }
 
 const SkillChart: React.FC<SkillChartProps> = React.memo(
@@ -85,6 +86,7 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
     height: propHeight,
     onMemberClick,
     onSelectionChange,
+    focusMemberId,
   }) => {
     const svgRef = useRef<SVGSVGElement>(null);
     const [dimensions, setDimensions] = useState({
@@ -892,12 +894,36 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
           zoomToNode(d);
         });
 
+      // Handle initial focus by simulating a click
+      if (focusMemberId) {
+        // Use a small timeout to ensure the DOM is ready and simulation has started
+        setTimeout(() => {
+          // Find the slice for this user
+          // We can select from the container directly
+          const targetSlice = container
+            .selectAll('.slice')
+            .filter((d: any) => d.data && d.data.id === focusMemberId)
+            .node();
+
+          if (targetSlice) {
+            // Dispatch a native click event to trigger the exact same handler
+            (targetSlice as Element).dispatchEvent(
+              new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+              }),
+            );
+          }
+        }, 100);
+      }
+
       // Cleanup
       return () => {
         skillSimulation.stop();
         groupSimulation.stop();
       };
-    }, [nodes, groups, vennCircles, dimensions, onMemberClick]);
+    }, [nodes, groups, vennCircles, dimensions, onMemberClick, focusMemberId]);
 
     // Drag Helper
     function drag(
