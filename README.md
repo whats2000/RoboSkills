@@ -27,6 +27,84 @@
 
 **RoboSkills** is a cutting-edge web application designed to bridge the gap between complex robotic data and actionable insights. By leveraging advanced visualization techniques—including forced-directed graphs and Venn diagrams—it provides a clear map of skill dependencies, overlaps, and critical gaps in robotic development.
 
+## 📋 Using This Template
+
+This repository is designed as a **template** for creating your own customized skill visualization website. Here's how to get started:
+
+### 1. Create Your Repository from This Template
+
+**On GitHub:**
+
+1. Click the **"Use this template"** button at the top of this repository
+2. Choose a name for your new repository (e.g., `my-team-skills`)
+3. Select whether you want it to be public or private
+4. Click **"Create repository from template"**
+
+**Or using GitHub CLI:**
+
+```bash
+gh repo create my-team-skills --template whats2000/RoboSkills --public
+cd my-team-skills
+```
+
+### 2. Customize Your Data
+
+Update the configuration files to match your team's information:
+
+**a) Homepage Configuration** (`public/data/homeConfig.json`)
+
+- Update your organization name, description, and logo
+- Customize the hero section text and imagery
+- Add your team's social links and contact information
+
+**b) Skills Data** (`public/data/skillsData.json`)
+
+- Add your team members with their expertise levels
+- Define the skills and competencies relevant to your domain
+- Set up skill categories and their relationships
+
+### 3. Customize Branding
+
+**Visual Identity:**
+
+- Replace `public/logo.svg` with your own logo
+- Update `public/og-image.png` for social media sharing
+- Modify the color scheme in `src/index.css` and Tailwind configuration
+
+**Site Metadata:**
+
+- Update the title and description in `index.html`
+- Modify the `vite.config.ts` for your deployment base path if needed.
+  If your repository name is `my-team-skills`, set:
+  ```ts
+    base: '/my-team-skills/',
+  ```
+
+### 4. Deploy Your Site
+
+**GitHub Pages (Recommended):**
+
+1. Go to your repository **Settings** → **Pages**
+2. Set source to **GitHub Actions**
+3. Push your changes - the site will automatically deploy
+4. Your site will be available at `https://your-username.github.io/your-repo-name`
+
+**Other Platforms:**
+
+- **Vercel**: Connect your repository and deploy with zero configuration
+- **Netlify**: Import your project and deploy automatically
+- **Custom Server**: Run `npm run build` and serve the `dist` folder
+
+### 5. Keep Your Template Updated
+
+To sync with upstream template improvements:
+
+```bash
+git remote add template https://github.com/whats2000/RoboSkills.git
+git fetch template
+git merge template/main --allow-unrelated-histories
+```
+
 ## ✨ Key Features
 
 - **📊 Interactive Skill Chart**
@@ -67,6 +145,7 @@ Follow these steps to set up the project locally.
 1.  **Clone the repository**
 
     ```bash
+    # Please replace the URL with your own repository if you forked or created from template
     git clone https://github.com/whats2000/RoboSkills.git
     cd robotic-skill-visualize
     ```
@@ -89,20 +168,6 @@ Follow these steps to set up the project locally.
 
 4.  **Explore**
     Open `http://localhost:5173` in your browser to view the app.
-
-## 🎨 Customization
-
-**RoboSkills** is designed to be easily adaptable for your own lab, company, or team.
-
-### using Your Own Data
-
-The application drives its visualizations from a central JSON file. To use your own data:
-
-1.  Navigate to `public/data/skillsData.json`.
-2.  Update the `members` array with your team's information.
-3.  Modify the `skills` array to reflect the specific competencies you want to track.
-
-The application will automatically reflect these changes in the Skill Chart and Gap Analysis dashboards.
 
 ### ✨ Visual Data Editor
 
