@@ -199,3 +199,17 @@ This project incorporates code from external libraries. We thank the authors for
 - **[d3-venn](https://github.com/christophe-g/d3-venn)** by Christophe Geiser (BSD 3-Clause License)
 - **[venn.js](https://github.com/benfred/venn.js)** by Ben Frederickson (MIT License)
 - **[spa-github-pages](https://github.com/rafgraph/spa-github-pages)** by Rafael Pedicini (MIT License)
+
+## 📖 Citation
+
+If you find RoboSkills useful in your work, please consider citing it as follows:
+
+```bibtex
+@software{roboskills2026,
+  author = {whats2000},
+  title = {RoboSkills: Robotic Skill Visualization \& Analysis Platform},
+  year = {2026},
+  url = {https://github.com/whats2000/RoboSkills},
+  note = {Available at: https://whats2000.github.io/RoboSkills/}
+}
+```
