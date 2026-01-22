@@ -295,6 +295,18 @@ export const SkillCategoryAdmin: React.FC<SkillCategoryAdminProps> = ({
           : values.color?.toHexString?.() || '#000000';
 
       if (editingCategory) {
+        const changes: string[] = [];
+        if (editingCategory.name !== values.name) {
+          changes.push(`name: "${editingCategory.name}" → "${values.name}"`);
+        }
+        if (editingCategory.description !== values.description) {
+          changes.push('description');
+        }
+        if (editingCategory.color !== colorValue) {
+          changes.push(`color: ${editingCategory.color} → ${colorValue}`);
+        }
+        const changeDesc = changes.length > 0 ? ` (${changes.join(', ')})` : '';
+
         addPendingChange({
           type: 'update-category',
           data: {
@@ -302,7 +314,7 @@ export const SkillCategoryAdmin: React.FC<SkillCategoryAdminProps> = ({
             ...values,
             color: colorValue,
           },
-          description: `Update category "${editingCategory.name}" → "${values.name}"`,
+          description: `Update category "${values.name}"${changeDesc}`,
         });
       } else {
         addPendingChange({
@@ -336,13 +348,47 @@ export const SkillCategoryAdmin: React.FC<SkillCategoryAdminProps> = ({
           description: `Add new skill "${values.name}"`,
         });
       } else if (editingSkill) {
+        const changes: string[] = [];
+        if (editingSkill.name !== values.name) {
+          changes.push(`name: "${editingSkill.name}" → "${values.name}"`);
+        }
+        if (editingSkill.description !== values.description) {
+          changes.push('description');
+        }
+        const oldCategories = editingSkill.belongsTo;
+        const newCategories = values.belongsTo || [];
+        const added = newCategories.filter(
+          (id: string) => !oldCategories.includes(id),
+        );
+        const removed = oldCategories.filter(
+          (id: string) => !newCategories.includes(id),
+        );
+
+        if (added.length > 0 || removed.length > 0) {
+          const categoryChanges: string[] = [];
+          if (added.length > 0) {
+            const addedNames = added.map(
+              (id: string) => categories.find((c) => c.id === id)?.name || id,
+            );
+            categoryChanges.push(`+${addedNames.join(', ')}`);
+          }
+          if (removed.length > 0) {
+            const removedNames = removed.map(
+              (id: string) => categories.find((c) => c.id === id)?.name || id,
+            );
+            categoryChanges.push(`-${removedNames.join(', ')}`);
+          }
+          changes.push(`categories: ${categoryChanges.join(', ')}`);
+        }
+        const changeDesc = changes.length > 0 ? ` (${changes.join('; ')})` : '';
+
         addPendingChange({
           type: 'update-skill',
           data: {
             ...editingSkill,
             ...values,
           },
-          description: `Update skill "${editingSkill.name}" → "${values.name}"`,
+          description: `Update skill "${values.name}"${changeDesc}`,
         });
       }
       setSkillModalOpen(false);
@@ -629,29 +675,27 @@ export const SkillCategoryAdmin: React.FC<SkillCategoryAdminProps> = ({
           <Form.Item name='description' label='Description'>
             <Input.TextArea placeholder='Brief description of the skill' />
           </Form.Item>
-          {isAddingSkill && (
-            <Form.Item
-              name='belongsTo'
-              label='Categories (select multiple for overlap)'
-              rules={[
-                { required: true, message: 'Select at least one category' },
-              ]}
-            >
-              <Checkbox.Group>
-                <Space wrap>
-                  {categories.map((cat) => (
-                    <Checkbox
-                      key={cat.id}
-                      value={cat.id}
-                      style={{ color: cat.color }}
-                    >
-                      <span style={{ color: cat.color }}>{cat.name}</span>
-                    </Checkbox>
-                  ))}
-                </Space>
-              </Checkbox.Group>
-            </Form.Item>
-          )}
+          <Form.Item
+            name='belongsTo'
+            label='Categories (select multiple for overlap)'
+            rules={[
+              { required: true, message: 'Select at least one category' },
+            ]}
+          >
+            <Checkbox.Group>
+              <Space wrap>
+                {categories.map((cat) => (
+                  <Checkbox
+                    key={cat.id}
+                    value={cat.id}
+                    style={{ color: cat.color }}
+                  >
+                    <span style={{ color: cat.color }}>{cat.name}</span>
+                  </Checkbox>
+                ))}
+              </Space>
+            </Checkbox.Group>
+          </Form.Item>
         </Form>
       </Modal>
     </>
