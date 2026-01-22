@@ -640,7 +640,9 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
                             style={{
                               backgroundColor: `${PROFICIENCY_COLORS[level]}25`,
                             }}
-                            onClick={() => navigate(`/?member=${member.name}`)}
+                            onClick={() =>
+                              navigate(`/overview?member=${member.name}`)
+                            }
                           >
                             <Avatar
                               size={18}
