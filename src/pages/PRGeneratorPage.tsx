@@ -21,6 +21,12 @@ const COMMON_ROLES = [
   'Alumni',
 ];
 
+// Unicode-safe base64 encoding
+const encodeBase64 = (str: string): string => {
+  // Convert string to UTF-8 bytes then to base64
+  return btoa(unescape(encodeURIComponent(str)));
+};
+
 interface MemberFormData {
   name: string;
   role: string;
@@ -242,7 +248,7 @@ export const PRGeneratorPage: React.FC = () => {
               return `batch update: ${batchChanges.length} changes`;
             return `update data for ${form.getFieldValue('name')}`;
           })()}`,
-          content: btoa(JSON.stringify(updatedContent, null, 2)),
+          content: encodeBase64(JSON.stringify(updatedContent, null, 2)),
           branch: BRANCH_NAME,
           sha: branchFileData.sha,
         });
