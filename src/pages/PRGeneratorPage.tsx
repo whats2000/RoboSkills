@@ -39,6 +39,22 @@ const encodeBase64 = (str: string): string => {
   return btoa(binary);
 };
 
+// Unicode-safe base64 decoding
+const decodeBase64 = (base64: string): string => {
+  // Decode from base64 to binary string
+  const binary = atob(base64);
+
+  // Convert binary string to UTF-8 byte array
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  // Decode UTF-8 bytes to string
+  const decoder = new TextDecoder();
+  return decoder.decode(bytes);
+};
+
 interface MemberFormData {
   name: string;
   role: string;
@@ -167,7 +183,9 @@ export const PRGeneratorPage: React.FC = () => {
       );
 
       if (!Array.isArray(fileData) && fileData.type === 'file') {
-        const decodedContent = atob(fileData.content.replace(/\n/g, ''));
+        const decodedContent = decodeBase64(
+          fileData.content.replace(/\n/g, ''),
+        );
         const currentContent = JSON.parse(decodedContent);
 
         // Update content locally
