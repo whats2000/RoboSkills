@@ -22,15 +22,21 @@ const COMMON_ROLES = [
 ];
 
 // Unicode-safe base64 encoding for GitHub API
-// GitHub expects base64-encoded UTF-8 content
+// GitHub's API expects base64-encoded content
 const encodeBase64 = (str: string): string => {
-  // Use the standard approach: UTF-16 → UTF-8 → base64
-  // This is compatible with how GitHub decodes the content
-  const utf8Bytes = new TextEncoder().encode(str);
-  const binaryString = Array.from(utf8Bytes, (byte) =>
-    String.fromCharCode(byte),
-  ).join('');
-  return btoa(binaryString);
+  // Convert to UTF-8 byte array
+  const encoder = new TextEncoder();
+  const utf8Array = encoder.encode(str);
+
+  // Convert byte array to binary string, handling each byte properly
+  let binary = '';
+  const len = utf8Array.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(utf8Array[i]);
+  }
+
+  // Encode to base64
+  return btoa(binary);
 };
 
 interface MemberFormData {
