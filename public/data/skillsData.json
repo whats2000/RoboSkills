@@ -343,6 +343,17 @@
           "proficiency": "intermediate"
         }
       ]
+    },
+    {
+      "id": "member-1769179658730",
+      "name": "測試用戶",
+      "role": "Alumni",
+      "skills": [
+        {
+          "skillId": "task-planning",
+          "proficiency": "intermediate"
+        }
+      ]
     }
   ]
 }
