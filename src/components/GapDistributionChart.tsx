@@ -546,7 +546,7 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
       .style('cursor', 'pointer')
       .style('transition', 'fill 0.2s ease')
       .text((d) => skillsData.find((s) => s.id === d)?.name || '')
-      .on('mouseenter', function (event, d) {
+      .on('mouseenter', function (_, d) {
         const skillId = d as string;
         // Highlight this text
         d3.select(this).attr('fill', '#fff').attr('font-weight', '700');
@@ -561,7 +561,7 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
           }
         });
       })
-      .on('mouseleave', function (event, d) {
+      .on('mouseleave', function (_, d) {
         const skillId = d as string;
         // Reset text style based on selection
         const isSelected = selectedSkill === skillId;

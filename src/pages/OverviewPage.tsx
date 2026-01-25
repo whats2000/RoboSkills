@@ -14,6 +14,7 @@ export const OverviewPage: React.FC = () => {
   const initialMemberName = searchParams.get('member');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [activeSkillId, setActiveSkillId] = useState<string | null>(null);
 
   const focusMemberId = React.useMemo(() => {
     if (!data || !initialMemberName) return null;
@@ -24,6 +25,14 @@ export const OverviewPage: React.FC = () => {
   const handleMemberClick = React.useCallback(() => {
     // Scroll to members grid
     const element = document.getElementById('members-grid');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleSkillClick = React.useCallback((skillId: string) => {
+    setActiveSkillId(skillId);
+    const element = document.getElementById('skill-chart');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
@@ -103,12 +112,13 @@ export const OverviewPage: React.FC = () => {
       </div>
 
       {/* Venn Zoom Visualization */}
-      <div className='glass-card overflow-hidden'>
+      <div id='skill-chart' className='glass-card overflow-hidden'>
         <VennZoomChart
           data={data}
           onMemberClick={handleMemberClick}
           onSelectionChange={handleSelectionChange}
           focusMemberId={focusMemberId}
+          focusSkillId={activeSkillId}
           height={550}
         />
       </div>
@@ -145,7 +155,12 @@ export const OverviewPage: React.FC = () => {
         </h2>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
           {filteredMembers.map((member) => (
-            <MemberCard key={member.id} member={member} data={data} />
+            <MemberCard
+              key={member.id}
+              member={member}
+              data={data}
+              onSkillClick={handleSkillClick}
+            />
           ))}
         </div>
         {filteredMembers.length === 0 && (

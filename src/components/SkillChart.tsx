@@ -78,6 +78,7 @@ interface SkillChartProps {
   width?: number;
   height?: number;
   focusMemberId?: string | null;
+  focusSkillId?: string | null;
 }
 
 const SkillChart: React.FC<SkillChartProps> = React.memo(
@@ -87,6 +88,7 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
     onMemberClick,
     onSelectionChange,
     focusMemberId,
+    focusSkillId,
   }) => {
     const svgRef = useRef<SVGSVGElement>(null);
     const [dimensions, setDimensions] = useState({
@@ -878,6 +880,7 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
       // Add a text background for readability?
       skillNodes
         .append('text')
+        .attr('class', 'skill-text')
         .attr('y', (d) => -d.r - 10) // Lift slightly higher
         .attr('text-anchor', 'middle')
         .attr('font-size', '11px') // Slightly larger
@@ -918,12 +921,39 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
         }, 100);
       }
 
+      if (focusSkillId) {
+        setTimeout(() => {
+          const targetSkillText = container
+            .selectAll('.skill-text')
+            .filter((d: any) => d.id === focusSkillId)
+            .node();
+
+          if (targetSkillText) {
+            (targetSkillText as Element).dispatchEvent(
+              new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+              }),
+            );
+          }
+        }, 100);
+      }
+
       // Cleanup
       return () => {
         skillSimulation.stop();
         groupSimulation.stop();
       };
-    }, [nodes, groups, vennCircles, dimensions, onMemberClick, focusMemberId]);
+    }, [
+      nodes,
+      groups,
+      vennCircles,
+      dimensions,
+      onMemberClick,
+      focusMemberId,
+      focusSkillId,
+    ]);
 
     // Drag Helper
     function drag(

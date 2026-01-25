@@ -13,12 +13,14 @@ interface MemberCardProps {
   member: LabMember;
   data: SkillsData;
   onClick?: (member: LabMember) => void;
+  onSkillClick?: (skillId: string) => void;
 }
 
 const SkillTag: React.FC<{
   skill: MemberSkill;
   data: SkillsData;
-}> = ({ skill, data }) => {
+  onSkillClick?: (skillId: string) => void;
+}> = ({ skill, data, onSkillClick }) => {
   const skillInfo = getSkillById(data.skills, skill.skillId);
   if (!skillInfo) return null;
 
@@ -45,7 +47,11 @@ const SkillTag: React.FC<{
       }
     >
       <Tag
-        className='category-badge m-1'
+        className='category-badge m-1 cursor-pointer hover:brightness-110 transition-all'
+        onClick={(e) => {
+          e.stopPropagation();
+          onSkillClick?.(skill.skillId);
+        }}
         style={{
           background: `${PROFICIENCY_COLORS[skill.proficiency]}20`,
           borderColor: PROFICIENCY_COLORS[skill.proficiency],
@@ -67,6 +73,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   member,
   data,
   onClick,
+  onSkillClick,
 }) => {
   const categoryWeights = getMemberCategoryWeights(member, data);
   const blendedColor = getMemberBlendedColor(categoryWeights, data.categories);
@@ -206,7 +213,12 @@ export const MemberCard: React.FC<MemberCardProps> = ({
               </span>
               <Flex wrap={true} gap={5}>
                 {visibleSkills.map((skill) => (
-                  <SkillTag key={skill.skillId} skill={skill} data={data} />
+                  <SkillTag
+                    key={skill.skillId}
+                    skill={skill}
+                    data={data}
+                    onSkillClick={onSkillClick}
+                  />
                 ))}
                 {!expanded && hiddenCount > 0 && (
                   <Tag
