@@ -996,6 +996,96 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
         .on('end', dragended);
     }
 
+    const highlightProficiency = (level: string | null) => {
+      if (!svgRef.current) return;
+      const container = d3.select(svgRef.current).select('.chart-container');
+      if (container.empty()) return;
+
+      if (level) {
+        // Dim everything first
+        container
+          .selectAll('.skills g')
+          .transition()
+          .duration(200)
+          .style('opacity', (d: any) => {
+            const hasProf = d.people.some((p: any) => p.proficiency === level);
+            return hasProf ? 1 : 0.1;
+          });
+
+        container
+          .selectAll('.slice')
+          .transition()
+          .duration(200)
+          .style('opacity', (d: any) =>
+            d.data.proficiency === level ? 1 : 0.1,
+          );
+
+        container
+          .selectAll('.categories circle')
+          .transition()
+          .duration(200)
+          .style('opacity', 0.1);
+        container
+          .selectAll('.categories text')
+          .transition()
+          .duration(200)
+          .style('opacity', 0.1);
+      } else {
+        // Restore
+        if (selectedMemberId) {
+          // Restore User Highlight
+          container
+            .selectAll('.skills g')
+            .transition()
+            .duration(200)
+            .style('opacity', (d: any) =>
+              d.people.some((p: any) => p.id === selectedMemberId) ? 1 : 0.1,
+            );
+
+          container
+            .selectAll('.slice')
+            .transition()
+            .duration(200)
+            .style('opacity', (d: any) =>
+              d.data.id === selectedMemberId ? 1 : 0.1,
+            );
+
+          container
+            .selectAll('.categories circle')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+          container
+            .selectAll('.categories text')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+        } else {
+          // Reset All
+          container
+            .selectAll('.skills g')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+          container
+            .selectAll('.slice')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+          container
+            .selectAll('.categories circle')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+          container
+            .selectAll('.categories text')
+            .transition()
+            .duration(200)
+            .style('opacity', 1);
+        }
+      }
+    };
+
     return (
       <div className='relative w-full h-full flex items-center justify-center p-4'>
         {/* Changed container to transparent/glass style to match theme */}
@@ -1072,13 +1162,18 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
           })()}
 
         {/* Legend */}
-        <div className='absolute bottom-4 left-4 bg-black/40 backdrop-blur-md p-3 rounded-lg border border-white/10 shadow-lg pointer-events-none select-none'>
+        <div className='absolute bottom-4 left-4 bg-black/40 backdrop-blur-md p-3 rounded-lg border border-white/10 shadow-lg select-none'>
           <h4 className='text-white/90 text-xs font-semibold mb-2 uppercase tracking-wider'>
             Proficiency Levels
           </h4>
           <div className='flex flex-col gap-2'>
             {['expert', 'advanced', 'intermediate', 'beginner'].map((level) => (
-              <div key={level} className='flex items-center gap-2'>
+              <div
+                key={level}
+                className='flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded transition-colors'
+                onMouseEnter={() => highlightProficiency(level)}
+                onMouseLeave={() => highlightProficiency(null)}
+              >
                 <div
                   className='w-3 h-3 rounded-full'
                   style={{
