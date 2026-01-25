@@ -997,7 +997,7 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
     }
 
     return (
-      <div className='w-full h-full flex items-center justify-center p-4'>
+      <div className='relative w-full h-full flex items-center justify-center p-4'>
         {/* Changed container to transparent/glass style to match theme */}
         <svg
           ref={svgRef}
@@ -1070,6 +1070,31 @@ const SkillChart: React.FC<SkillChartProps> = React.memo(
               </div>
             );
           })()}
+
+        {/* Legend */}
+        <div className='absolute bottom-4 left-4 bg-black/40 backdrop-blur-md p-3 rounded-lg border border-white/10 shadow-lg pointer-events-none select-none'>
+          <h4 className='text-white/90 text-xs font-semibold mb-2 uppercase tracking-wider'>
+            Proficiency Levels
+          </h4>
+          <div className='flex flex-col gap-2'>
+            {['expert', 'advanced', 'intermediate', 'beginner'].map((level) => (
+              <div key={level} className='flex items-center gap-2'>
+                <div
+                  className='w-3 h-3 rounded-full'
+                  style={{
+                    backgroundColor:
+                      PROFICIENCY_COLORS[
+                        level as keyof typeof PROFICIENCY_COLORS
+                      ],
+                  }}
+                />
+                <span className='text-white/80 text-xs capitalize'>
+                  {level}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   },
