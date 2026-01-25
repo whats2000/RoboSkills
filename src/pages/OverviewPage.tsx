@@ -97,7 +97,8 @@ export const OverviewPage: React.FC = () => {
         </h1>
         <p className='text-gray-400 text-sm max-w-xl mx-auto'>
           Skills in overlapping regions span multiple categories. Scroll to
-          zoom, drag to pan.
+          zoom, drag to pan. Click a skill name to focus, or click an inner
+          slice to activate a user.
         </p>
       </div>
 

@@ -196,8 +196,8 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
   useEffect(() => {
     if (!radarRef.current || categoryData.length === 0) return;
     const svg = d3.select(radarRef.current);
-    const width = 360;
-    const height = 360;
+    const width = 400;
+    const height = 400;
     const centerX = width / 2;
     const centerY = height / 2;
     const radius = 85;
@@ -248,31 +248,91 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
       const angle = angleSlice * i - Math.PI / 2;
       const x = Math.cos(angle) * radius;
       const y = Math.sin(angle) * radius;
+      const isSelected = selectedCategory === d.category.id;
+
+      // Draw Axis Line (Highlighted if selected)
       g.append('line')
         .attr('x1', 0)
         .attr('y1', 0)
         .attr('x2', x)
         .attr('y2', y)
-        .attr('stroke', 'rgba(255,255,255,0.12)');
+        .attr(
+          'stroke',
+          isSelected ? d.category.color : 'rgba(255,255,255,0.12)',
+        )
+        .attr('stroke-width', isSelected ? 2 : 1)
+        .attr('stroke-opacity', isSelected ? 0.8 : 1)
+        .style('transition', 'all 0.3s ease'); // Smooth transition
 
       const labelR = radius + 45;
       const lx = Math.cos(angle) * labelR;
       const ly = Math.sin(angle) * labelR;
-      const isSelected = selectedCategory === d.category.id;
 
-      g.append('text')
+      const labelGroup = g
+        .append('g')
+        .style('cursor', 'pointer')
+        .on('click', () => {
+          setSelectedCategory(d.category.id);
+          setSelectedSkill(null);
+        });
+
+      // Calculate approximate box width based on text length
+      const boxWidth = Math.max(90, d.category.name.length * 9);
+      const boxHeight = 26;
+
+      // Background Box (Visible when selected)
+      labelGroup
+        .append('rect')
+        .attr('x', lx - boxWidth / 2)
+        .attr('y', ly - boxHeight / 2)
+        .attr('width', boxWidth)
+        .attr('height', boxHeight)
+        .attr('rx', 13) // Pill shape
+        .attr('ry', 13)
+        .attr('fill', isSelected ? d.category.color : 'transparent')
+        .attr('fill-opacity', isSelected ? 0.15 : 0)
+        .attr('stroke', isSelected ? d.category.color : 'transparent')
+        .attr('stroke-width', 1)
+        .style('transition', 'all 0.3s ease');
+
+      labelGroup
+        .append('text')
         .attr('x', lx)
         .attr('y', ly)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .attr('fill', isSelected ? d.category.color : 'rgba(255,255,255,0.7)')
-        .attr('font-size', '11px')
+        .attr('font-size', isSelected ? '12px' : '11px')
         .attr('font-weight', isSelected ? '700' : '400')
-        .style('cursor', 'pointer')
+        .style('transition', 'all 0.2s ease')
         .text(d.category.name)
-        .on('click', () => {
-          setSelectedCategory(d.category.id);
-          setSelectedSkill(null);
+        .on('mouseenter', function () {
+          d3.select(this)
+            .attr('fill', d.category.color)
+            .attr('font-weight', '700')
+            .style('filter', 'drop-shadow(0 0 4px rgba(0,0,0,0.5))');
+
+          // Also highlight the box slightly on hover if not selected
+          if (!isSelected) {
+            d3.select(this.previousSibling as Element)
+              .attr('fill', 'rgba(255,255,255,0.05)')
+              .attr('fill-opacity', 1);
+          }
+        })
+        .on('mouseleave', function () {
+          d3.select(this)
+            .attr(
+              'fill',
+              isSelected ? d.category.color : 'rgba(255,255,255,0.7)',
+            )
+            .attr('font-weight', isSelected ? '700' : '400')
+            .style('filter', 'none');
+
+          if (!isSelected) {
+            d3.select(this.previousSibling as Element)
+              .attr('fill', 'transparent')
+              .attr('fill-opacity', 0);
+          }
         });
     });
 
@@ -361,7 +421,7 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
       containerWidth,
       skillsData.length * 45 + margin.left + margin.right,
     );
-    const height = 360; // Same as radar
+    const height = 400; // Same as radar
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -509,7 +569,7 @@ const GapDistributionChart: React.FC<GapDistributionChartProps> = ({
               Expertise Distribution
             </h3>
             <div className='flex-1 flex items-center justify-center'>
-              <svg ref={radarRef} className='w-[360px] h-[360px]' />
+              <svg ref={radarRef} className='w-[400px] h-[400px]' />
             </div>
             <div className='grid grid-cols-2 gap-2 mt-2'>
               {EXPERTISE_LEVELS.map((level) => (
