@@ -144,7 +144,14 @@ export const SkillCategoryAdmin: React.FC<SkillCategoryAdminProps> = ({
           {belongsTo.map((catId) => {
             const cat = categories.find((c) => c.id === catId);
             return cat ? (
-              <Tag key={catId} color={cat.color}>
+              <Tag
+                key={catId}
+                style={{
+                  backgroundColor: `${cat.color}20`,
+                  color: cat.color,
+                  border: `1px solid ${cat.color}`,
+                }}
+              >
                 {cat.name}
               </Tag>
             ) : null;

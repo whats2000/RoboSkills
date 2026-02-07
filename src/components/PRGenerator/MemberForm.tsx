@@ -154,13 +154,14 @@ export const MemberForm: React.FC<MemberFormProps> = ({
                         <Tag
                           className={`cursor-pointer transition-all border ${
                             isSelected
-                              ? 'text-white'
+                              ? ''
                               : 'bg-white/5 text-gray-400 border-gray-700 hover:text-gray-300 hover:border-gray-600'
                           }`}
                           style={
                             isSelected
                               ? {
-                                  backgroundColor: category.color,
+                                  backgroundColor: `${category.color}20`,
+                                  color: category.color,
                                   borderColor: category.color,
                                 }
                               : undefined
